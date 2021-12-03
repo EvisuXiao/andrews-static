@@ -1,0 +1,10 @@
+{
+  "image_max_size": "5m",
+  "video_max_size": "50m",
+  "audio_max_size": "10m",
+  "transfer": {
+    "type": "local",
+    "addr": "",
+    "path": "/data/static"
+  }
+}
