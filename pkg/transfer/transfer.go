@@ -1,8 +1,9 @@
 package transfer
 
 import (
-	"upload-test/config"
-	"upload-test/pkg/logging"
+	"github.com/EvisuXiao/andrews-common/logging"
+
+	"andrews-static/config"
 )
 
 type iTransfer interface {
@@ -13,7 +14,7 @@ type iTransfer interface {
 
 var transferAdapter iTransfer
 
-func Setup() {
+func Init() {
 	switch config.UploadConfig.Transfer.Type {
 	case TYPE_LOCAL:
 		transferAdapter = NewLocalAdapter()

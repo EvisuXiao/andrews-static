@@ -7,10 +7,13 @@ import (
 	"mime/multipart"
 	"os"
 	"time"
-	"upload-test/config"
-	"upload-test/pkg/transfer"
-	"upload-test/pkg/utils"
-	"upload-test/types"
+
+	cConf "github.com/EvisuXiao/andrews-common/config"
+	"github.com/EvisuXiao/andrews-common/utils"
+
+	"andrews-static/config"
+	"andrews-static/pkg/transfer"
+	"andrews-static/types"
 )
 
 type Uploader struct {
@@ -28,7 +31,7 @@ type UploadFilterHandler func(types.FileBrief, []*UploadFilter) (types.FileBrief
 
 func NewUploader(fileHeader *multipart.FileHeader) *Uploader {
 	uploader := &Uploader{fileHeader: fileHeader}
-	uploader.tempFile.BaseDir = config.TempFilePath("")
+	uploader.tempFile.BaseDir = cConf.TempFilePath("")
 	uploader.tempFile.Filename = fileHeader.Filename
 	uploader.tempFile.FormatFromFilename()
 	uploader.tempFile.Basename = fmt.Sprintf("%s%d", uploader.tempFile.Basename, time.Now().Unix())
@@ -37,18 +40,18 @@ func NewUploader(fileHeader *multipart.FileHeader) *Uploader {
 }
 
 func (u *Uploader) Upload() error {
-	if err := u.check(); !utils.IsEmpty(err) {
+	if err := u.check(); utils.HasErr(err) {
 		return err
 	}
-	if err := u.saveTmpFile(); !utils.IsEmpty(err) {
+	if err := u.saveTmpFile(); utils.HasErr(err) {
 		return err
 	}
-	if err := u.hashFilename(); !utils.IsEmpty(err) {
+	if err := u.hashFilename(); utils.HasErr(err) {
 		return err
 	}
 	for _, filter := range u.filters {
 		filteredFile, err := filter.handler(u.tempFile, u.filters)
-		if !utils.IsEmpty(err) {
+		if utils.HasErr(err) {
 			return err
 		}
 		filter.File = filteredFile
@@ -72,12 +75,12 @@ func (u *Uploader) check() error {
 
 func (u *Uploader) saveTmpFile() error {
 	src, err := u.fileHeader.Open()
-	if !utils.IsEmpty(err) {
+	if utils.HasErr(err) {
 		return err
 	}
 	defer src.Close()
 	out, err := os.Create(u.tempFile.FilePath)
-	if !utils.IsEmpty(err) {
+	if utils.HasErr(err) {
 		return err
 	}
 	defer out.Close()
@@ -87,7 +90,7 @@ func (u *Uploader) saveTmpFile() error {
 
 func (u *Uploader) hashFilename() error {
 	h, err := utils.EncodeMd5File(u.tempFile.FilePath)
-	if !utils.IsEmpty(err) {
+	if utils.HasErr(err) {
 		return err
 	}
 	tmpPath := u.tempFile.FilePath

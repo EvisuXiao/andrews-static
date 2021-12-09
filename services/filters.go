@@ -1,8 +1,8 @@
 package services
 
 import (
-	"upload-test/pkg/image"
-	"upload-test/types"
+	"andrews-static/pkg/image"
+	"andrews-static/types"
 )
 
 func ThumbFilter(width, height int) UploadFilterHandler {

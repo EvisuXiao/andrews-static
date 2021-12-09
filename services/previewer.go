@@ -2,8 +2,9 @@ package services
 
 import (
 	"fmt"
-	"upload-test/config"
-	"upload-test/types"
+
+	"andrews-static/config"
+	"andrews-static/types"
 )
 
 type Previewer struct {

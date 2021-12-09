@@ -1,13 +1,15 @@
 package transfer
 
 import (
-	"github.com/tencentyun/cos-go-sdk-v5"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
-	"upload-test/config"
-	"upload-test/pkg/utils"
+
+	"github.com/EvisuXiao/andrews-common/utils"
+	"github.com/tencentyun/cos-go-sdk-v5"
+
+	"andrews-static/config"
 )
 
 const TYPE_COS = "cos"

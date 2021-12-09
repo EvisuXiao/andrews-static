@@ -1,106 +1,47 @@
 package config
 
 import (
-	"encoding/json"
-	"flag"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
 	"strconv"
 	"strings"
-	"time"
+
+	"github.com/EvisuXiao/andrews-common/config"
 )
 
-const (
-	ServiceName = "restapi.uploadtest"
-
-	EnvLocal   = "local"
-	EnvTesting = "testing"
-	EnvProd    = "production"
-
-	tempPath = "runtime/"
-)
-
-var dir string
-
-type Server struct {
-	Env      string  `json:"env"`
-	HttpPort int     `json:"http_port"`
-	Timeout  Timeout `json:"timeout"`
-}
-type Timeout struct {
-	Read  time.Duration `json:"read"`
-	Write time.Duration `json:"write"`
-}
-
-var ServerConfig = &Server{}
+const ServiceName = "restapi-static-andrews"
 
 type Upload struct {
-	ImageMaxSizeStr string   `json:"image_max_size"`
-	VideoMaxSizeStr string   `json:"video_max_size"`
-	AudioMaxSizeStr string   `json:"audio_max_size"`
+	ImageMaxSizeStr string   `json:"image_max_size" default:"5m"`
+	VideoMaxSizeStr string   `json:"video_max_size" default:"50m"`
+	AudioMaxSizeStr string   `json:"audio_max_size" default:"10m"`
 	ImageMaxSize    int64    `json:"-"`
 	VideoMaxSize    int64    `json:"-"`
 	AudioMaxSize    int64    `json:"-"`
 	Transfer        Transfer `json:"transfer"`
 }
 type Transfer struct {
-	Type     string `json:"type"`
+	Type     string `json:"type" default:"local"`
 	Addr     string `json:"addr"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Path     string `json:"path"`
+	Path     string `json:"path" default:"/data/static/"`
 }
 
 var UploadConfig = &Upload{}
 
-func Setup() {
-	parseFlag()
+func Init() {
+	config.Init(ServiceName)
 	loadConf()
 	initConf()
 }
 
-func parseFlag() {
-	flag.StringVar(&dir, "dir", "./", "The application directory")
-	flag.Parse()
-	dir = addDirSlash(dir)
-}
-
 func loadConf() {
-	log.Println("[INFO] Load configuration")
-	mapTo("server.json", ServerConfig)
-	mapTo("upload.json", UploadConfig)
+	config.MapTo("upload.json", UploadConfig)
 }
 
 func initConf() {
-	if ServerConfig.Env != EnvLocal && ServerConfig.Env != EnvProd {
-		ServerConfig.Env = EnvTesting
-	}
-	ServerConfig.Timeout.Read = ServerConfig.Timeout.Read * time.Second
-	ServerConfig.Timeout.Write = ServerConfig.Timeout.Write * time.Second
 	UploadConfig.ImageMaxSize = sizeFormatter(UploadConfig.ImageMaxSizeStr)
 	UploadConfig.VideoMaxSize = sizeFormatter(UploadConfig.VideoMaxSizeStr)
 	UploadConfig.AudioMaxSize = sizeFormatter(UploadConfig.AudioMaxSizeStr)
-	UploadConfig.Transfer.Path = addDirSlash(UploadConfig.Transfer.Path)
-}
-
-func mapTo(section string, config interface{}) {
-	filename := AppFilePath(fmt.Sprintf("conf/%s", section))
-	f, err := os.Open(filename)
-	defer f.Close()
-	if err != nil {
-		log.Fatalf("[FATAL] Setup fatal: open %s error: %v\n", filename, err)
-	}
-	read, err := ioutil.ReadAll(f)
-	if err != nil {
-		log.Fatalf("[FATAL] Setup fatal: read %s error: %v\n", filename, err)
-	}
-	err = json.Unmarshal(read, config)
-	if err != nil {
-		log.Fatalf("[FATAL] Setup fatal: parse %s error: %v\n", filename, err)
-	}
-	log.Printf("[INFO] %s config setup successfully!", section)
 }
 
 func sizeFormatter(size string) int64 {
@@ -127,36 +68,6 @@ func sizeFormatter(size string) int64 {
 	}
 }
 
-func addDirSlash(path string) string {
-	if path == "" {
-		path = "."
-	}
-	if !strings.HasSuffix(path, "/") {
-		path += "/"
-	}
-	return path
-}
-
-func AppFilePath(filename string) string {
-	return dir + filename
-}
-
 func UploadFilePath(filename string) string {
 	return UploadConfig.Transfer.Path + filename
-}
-
-func TempFilePath(filename string) string {
-	return AppFilePath(tempPath + filename)
-}
-
-func IsLocalEnv() bool {
-	return ServerConfig.Env == EnvLocal
-}
-
-func IsTestingEnv() bool {
-	return ServerConfig.Env == EnvTesting
-}
-
-func IsProdEnv() bool {
-	return ServerConfig.Env == EnvProd
 }

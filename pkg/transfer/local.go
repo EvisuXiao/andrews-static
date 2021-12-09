@@ -2,7 +2,8 @@ package transfer
 
 import (
 	"os"
-	"upload-test/config"
+
+	"andrews-static/config"
 )
 
 const TYPE_LOCAL = "local"

@@ -2,13 +2,16 @@ package controllers
 
 import (
 	"errors"
+
+	"github.com/EvisuXiao/andrews-common/controller"
+	"github.com/EvisuXiao/andrews-common/utils"
 	"github.com/gin-gonic/gin"
-	"upload-test/pkg/utils"
-	"upload-test/services"
+
+	"andrews-static/services"
 )
 
 type Upload struct {
-	Base
+	controller.Base
 }
 
 var (
@@ -21,7 +24,7 @@ func NewUploadController() *Upload {
 
 func (c *Upload) Upload(ctx *gin.Context) bool {
 	form, err := ctx.MultipartForm()
-	if !utils.IsEmpty(err) {
+	if utils.HasErr(err) {
 		return c.InvalidParamResponse(ctx, err)
 	}
 	files, ok := form.File["file"]

@@ -2,16 +2,18 @@ package image
 
 import (
 	"fmt"
+
+	"github.com/EvisuXiao/andrews-common/utils"
 	"github.com/disintegration/imaging"
-	"upload-test/pkg/utils"
-	"upload-test/types"
+
+	"andrews-static/types"
 )
 
 var DefaultFilter = imaging.Lanczos
 
 func Resize(file types.FileBrief, width, height int) (types.FileBrief, error) {
 	img, err := imaging.Open(file.FilePath)
-	if !utils.IsEmpty(err) {
+	if utils.HasErr(err) {
 		return types.FileBrief{}, err
 	}
 	newImg := imaging.Resize(img, width, height, DefaultFilter)
